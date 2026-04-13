@@ -1,5 +1,7 @@
 import taichi as ti
 import taichi.math as tm
+from PIL import Image 
+import numpy as np
 
 ti.init(arch=ti.gpu)
 
@@ -34,7 +36,7 @@ def paint(t: float, x_offset: float, y_offset: float, zoom: float):
         y = (y / (zoom*0.5)) + y_offset
 
         c = tm.vec2(x, y)
-        pixels[i, j] = mandelbrot(c, max_iter = 10 * zoom)
+        pixels[i, j] = mandelbrot(c, max_iter = 250)
 
 
 gui = ti.GUI("Demo", res=resolution)
@@ -68,12 +70,14 @@ while gui.running:
     elif gui.is_pressed('e'):
         zoom /= 1.05
         changed = True
+    if gui.is_pressed('p'):
+        ti.tools.image.imwrite(pixels, 'screenshot.png')
     
     if changed:
         paint(i, x_offset, y_offset, zoom)
         changed = False
 
-
     gui.set_image(pixels)
     gui.show()
+    
     i += 1
