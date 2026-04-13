@@ -1,33 +1,79 @@
 import taichi as ti
+import taichi.math as tm
 
 ti.init(arch=ti.gpu)
 
-n = 640
-pixels = ti.field(dtype=float, shape=(n * 2, n))
+resolution = (1920, 1080)
+pixels = ti.field(dtype=float, shape=resolution)
 
+@ti.func
+def mandelbrot(c: tm.vec2, max_iter: int = 100) -> float:
+    z = tm.vec2(0.0, 0.0)
+    result = float(max_iter)
+    for n in range(max_iter):
+
+        z = tm.cpow(z, 2) + c
+
+        if tm.length(z) > 2.0:
+            result = float(n) / float(max_iter)
+            break
+        
+    return result
 
 @ti.kernel
-def paint(t: float):
-
+def paint(t: float, x_offset: float, y_offset: float, zoom: float):
     width, height = pixels.shape
-    mid_x = width / 2
-    mid_y = height / 2
+    aspect = float(width) / float(height)
 
     for i, j in pixels:
 
-        x_dist = i - mid_x
-        y_dist = j - mid_y
-        y_dist *=2
-        dist = ti.sqrt(x_dist**2 + y_dist**2)
+        x = (float(i + x_offset) / float(width) - 0.5) * aspect
+        y = (float(j + y_offset) / float(height) - 0.5)
         
-        pixels[i, j] = 1 if dist > 200 else 0
+        x = (x / (zoom*0.5)) + x_offset - 0.50
+        y = (y / (zoom*0.5)) + y_offset
+
+        c = tm.vec2(x, y)
+        pixels[i, j] = mandelbrot(c, max_iter = 10 * zoom)
 
 
-gui = ti.GUI("Demo", res=(n * 2, n))
+gui = ti.GUI("Demo", res=resolution)
 
 i = 0
+x_offset: float = 0.0
+y_offset: float = 0.0
+zoom: float = 1.0
+changed: bool = True
+
 while gui.running:
-    paint(i)
+
+    while gui.get_event():
+        pass
+
+    if gui.is_pressed('a'):
+        x_offset -= 0.05 / zoom
+        changed = True
+    elif gui.is_pressed('d'):
+        x_offset += 0.05 / zoom
+        changed = True
+    if gui.is_pressed('w'):
+        y_offset += 0.05 / zoom
+        changed = True
+    elif gui.is_pressed('s'):
+        y_offset -= 0.05 / zoom
+        changed = True
+    if gui.is_pressed('q'):
+        zoom *= 1.05
+        changed = True
+    elif gui.is_pressed('e'):
+        zoom /= 1.05
+        changed = True
+    
+    if changed:
+        paint(i, x_offset, y_offset, zoom)
+        changed = False
+
+
     gui.set_image(pixels)
     gui.show()
     i += 1
