@@ -7,8 +7,8 @@ benchmarking render time and GPU utilization.
 | Python | C++ | C |
 |-----------------|--------|-----------------|
 | Taichi (Vulkan) | Vulkan | Raylib (OpenGL) |
-| Taichi (CUDA)   | CUDA   |                 |
-| Taichi (OpenGL) |        |                 |
+| Taichi (CUDA)   | CUDA   | CPU             |
+| Taichi (OpenGL) | CPU    |                 |
 | Taichi (CPU)    |        |                 |
 
 ## Benchmarks
@@ -25,7 +25,9 @@ benchmarking render time and GPU utilization.
 | Python / Taichi (CPU) | ... |
 | C++ / Vulkan | ... |
 | C++ / CUDA | ... |
+| C++ / CPU | ... |
 | C / Raylib (OpenGL) | ... |
+| C / CPU | ... |
 
 ## Building & Running
 >add later
